@@ -1,0 +1,2 @@
+export interface AIProvider { id: string; name: string; provider_type: string; base_url?: string; api_key_masked?: string; timeout_seconds: number; retry_count: number; stream_enabled: boolean; is_active: boolean; }
+export interface AIModel { id: string; provider_id?: string; name: string; display_name: string; role: string; max_context_tokens: number; max_output_tokens: number; temperature: number; top_p: number; is_default: boolean; is_active: boolean; }

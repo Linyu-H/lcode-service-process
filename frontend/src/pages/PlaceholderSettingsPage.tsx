@@ -1,0 +1,2 @@
+import { Card } from '../components/ui/Card'; import { Input } from '../components/ui/Input'; import { Button } from '../components/ui/Button';
+export function PlaceholderSettingsPage({title}:{title:string}){ return <div className="page"><div className="page-head"><div><h1>{title}</h1><p>企业版增强能力预留：配置、校验、审计和接口边界已占位。</p></div></div><Card><label>名称<Input placeholder="配置名称"/></label><label>连接地址<Input placeholder="URL / Host / Command"/></label><Button>保存占位配置</Button></Card></div> }

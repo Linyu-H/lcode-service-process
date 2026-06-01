@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+dist/
+dist-electron/
+.env
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.log
+backend/.pytest_cache/
+backend/app_data/
+frontend/dist/
+electron/dist/

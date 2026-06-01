@@ -1,0 +1,2 @@
+import { api } from './api'; import type { AIModel, AIProvider } from '../types/ai';
+export const aiService = { providers: () => api.get<AIProvider[]>('/api/v1/ai/providers'), createProvider: (p: Partial<AIProvider> & {api_key?: string}) => api.post<AIProvider>('/api/v1/ai/providers', p), models: () => api.get<AIModel[]>('/api/v1/ai/models'), createModel: (m: Partial<AIModel>) => api.post<AIModel>('/api/v1/ai/models', m) };

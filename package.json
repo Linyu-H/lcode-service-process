@@ -1,0 +1,35 @@
+{
+  "name": "lcode-service-process",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Enterprise desktop AI agent workflow orchestration app",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:electron\"",
+    "dev:backend": "cd backend && python3.11 -m uvicorn app.main:app --host 127.0.0.1 --port 8765 --reload",
+    "dev:frontend": "vite --host 127.0.0.1 --port 5173",
+    "dev:electron": "wait-on http://127.0.0.1:5173 http://127.0.0.1:8765/health && tsc -p electron/tsconfig.json && electron .",
+    "typecheck": "tsc --noEmit && tsc -p electron/tsconfig.json --noEmit",
+    "build": "tsc --noEmit && vite build && tsc -p electron/tsconfig.json",
+    "preview": "vite preview --host 127.0.0.1 --port 5173"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "@xyflow/react": "latest",
+    "zustand": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "electron": "latest",
+    "concurrently": "latest",
+    "wait-on": "latest"
+  }
+}
