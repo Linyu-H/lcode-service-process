@@ -93,6 +93,18 @@ export function WorkflowEditorPage() {
   const [focusMode, setFocusMode] = useState(false);
   const [nodeQuery, setNodeQuery] = useState('');
   const onConnect = useCallback((connection: Connection) => setEdges(existing => addEdge(makeWorkflowEdge(`edge-${Date.now()}`, connection.source || '', connection.target || ''), existing)), [setEdges]);
+  const onClickConnectStart = useCallback((_: unknown, params: { nodeId: string | null }) => {
+    const node = nodes.find(n => n.id === params.nodeId);
+    setMessage(`已选中上游节点「${(node?.data as any)?.label || params.nodeId}」，点击另一个节点的连接点完成连线（Esc 取消）`);
+  }, [nodes]);
+  const onClickConnectEnd = useCallback(() => setMessage(''), []);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setSelected(undefined); setSelectedEdge(undefined); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const normalizeEdges = (loadedEdges: Edge[]) => loadedEdges.map(edge => {
     const kind = (edge.data as any)?.kind === 'error' || edge.label === '异常' ? 'error' : 'success';
     return { ...makeWorkflowEdge(edge.id, edge.source, edge.target, kind), ...edge, data: { ...(edge.data || {}), kind } };
@@ -221,10 +233,10 @@ export function WorkflowEditorPage() {
         <div className="flow-canvas">
           <div className="canvas-guide">
             <strong>流程画布</strong>
-            <span>绿色箭头=成功路径</span>
-            <span>红色箭头=异常兜底</span>
+            <span>点击节点连接点 → 再点另一节点连接点 完成连线</span>
+            <span>绿色=成功路径 · 红色=异常兜底</span>
           </div>
-          <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeClick={(_, node) => { setSelected(node); setSelectedEdge(undefined); }} onEdgeClick={(_, edge) => { setSelectedEdge(edge); setSelected(undefined); }} fitView>
+          <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onClickConnectStart={onClickConnectStart} onClickConnectEnd={onClickConnectEnd} onNodeClick={(_, node) => { setSelected(node); setSelectedEdge(undefined); }} onEdgeClick={(_, edge) => { setSelectedEdge(edge); setSelected(undefined); }} fitView>
             <Background /><MiniMap pannable zoomable /><Controls />
           </ReactFlow>
         </div>
