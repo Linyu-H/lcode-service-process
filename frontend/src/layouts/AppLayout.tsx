@@ -30,7 +30,7 @@ export function AppLayout() {
         <header className="topbar">
           <div>
             <strong>企业级 AI Agent 工作流编排</strong>
-            <span className="muted">Cursor 风格工作台 · 默认模型未配置 · 本地服务 127.0.0.1:8765</span>
+            <span className="muted">专业流程工作台 · 默认模型未配置 · 本地服务 127.0.0.1:8765</span>
           </div>
           <div className="top-actions">
             <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}><Activity size={14} />{apiOnline ? 'API 在线' : 'API 离线'}</span>

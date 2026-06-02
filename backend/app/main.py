@@ -15,6 +15,9 @@ def startup(): init_db()
 @app.get("/health")
 def health(): return {"status":"ok", "name": settings.app_name}
 
+@app.head("/health")
+def health_head(): return None
+
 app.include_router(api_router, prefix=settings.api_prefix)
 
 @app.websocket("/ws/events")

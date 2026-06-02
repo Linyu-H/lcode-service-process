@@ -39,8 +39,14 @@ class WorkflowEngine:
                 errors.append(f"连线目标节点不存在：{edge.get('target')}")
 
         outgoing: dict[str, list[str]] = {}
+        error_outgoing: dict[str, list[str]] = {}
         for edge in edges:
-            outgoing.setdefault(edge.get("source"), []).append(edge.get("target"))
+            kind = (edge.get("data") or {}).get("kind") or edge.get("condition") or edge.get("label")
+            target = edge.get("target")
+            if kind == "error" or kind == "异常":
+                error_outgoing.setdefault(edge.get("source"), []).append(target)
+            else:
+                outgoing.setdefault(edge.get("source"), []).append(target)
 
         start = next((n for n in nodes if (n.get("type") or n.get("data", {}).get("node_type")) == "start"), None)
         reachable = set()
@@ -90,9 +96,14 @@ class WorkflowEngine:
         nodes = graph.get("nodes", [])
         edges = graph.get("edges", [])
         by_id = {n.get("id"): n for n in nodes}
-        outgoing = {}
-        for e in edges:
-            outgoing.setdefault(e.get("source"), []).append(e.get("target"))
+        outgoing: dict[str, list[str]] = {}
+        error_outgoing: dict[str, list[str]] = {}
+        for edge in edges:
+            kind = (edge.get("data") or {}).get("kind") or edge.get("condition") or edge.get("label")
+            if kind == "error" or kind == "异常":
+                error_outgoing.setdefault(edge.get("source"), []).append(edge.get("target"))
+            else:
+                outgoing.setdefault(edge.get("source"), []).append(edge.get("target"))
         start = next((n for n in nodes if (n.get("type") or n.get("data", {}).get("node_type")) == "start"), nodes[0] if nodes else None)
         current = start.get("id") if start else None
         completed = 0
@@ -124,6 +135,12 @@ class WorkflowEngine:
             run.progress = int(completed / max(len(nodes), 1) * 100)
             await ws_manager.broadcast({"type": "node.completed" if result_success else "node.failed", "run_id": run_id, "node": current, "node_type": ntype, "output": output, "error": error}, run_id)
             if not result_success:
+                fallback = error_outgoing.get(current, [])
+                if fallback:
+                    await ws_manager.broadcast({"type": "node.error_routed", "run_id": run_id, "node": current, "error": error, "target": fallback[0]}, run_id)
+                    upstream[current] = {"error": error, "output": output, "routed_by": "error_edge"}
+                    current = fallback[0]
+                    continue
                 run.status = "waiting_confirm" if ntype == "manual_confirm" else "failed"
                 run.error_message = error
                 run.ended_at = utc_now()
