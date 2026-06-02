@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { dialog, app, BrowserWindow, ipcMain, shell } from 'electron';
 import path from 'path';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import http from 'http';
@@ -61,6 +61,19 @@ async function createWindow() {
 ipcMain.handle('app:version', () => app.getVersion());
 ipcMain.handle('backend:status', () => Boolean(backendProcess));
 ipcMain.handle('shell:openDirectory', async (_event, dir: string) => shell.openPath(dir));
+ipcMain.handle('shell:selectDirectory', async () => {
+  const result = mainWindow
+    ? await dialog.showOpenDialog(mainWindow, {
+        title: '选择项目本地目录',
+        properties: ['openDirectory', 'createDirectory']
+      })
+    : await dialog.showOpenDialog({
+        title: '选择项目本地目录',
+        properties: ['openDirectory', 'createDirectory']
+      });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
 
 app.whenReady().then(createWindow);
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });

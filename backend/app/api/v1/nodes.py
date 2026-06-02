@@ -12,13 +12,16 @@ router = APIRouter(tags=["nodes"])
 
 @router.get("/node-templates", response_model=list[NodeTemplateOut])
 def list_templates(db: Session = Depends(get_db)):
-    existing = db.query(NodeTemplate).all()
-    if not existing:
-        for template in node_registry.templates():
-            db.add(NodeTemplate(**template, schema_json=dumps({}), default_config_json=dumps({})))
-        db.commit()
-        existing = db.query(NodeTemplate).all()
-    return existing
+    for template in node_registry.templates():
+        existing = db.query(NodeTemplate).filter(NodeTemplate.node_type == template["node_type"]).first()
+        if existing:
+            for key, value in template.items():
+                setattr(existing, key, value)
+            db.add(existing)
+        else:
+            db.add(NodeTemplate(**template))
+    db.commit()
+    return db.query(NodeTemplate).order_by(NodeTemplate.category.asc(), NodeTemplate.name.asc()).all()
 
 @router.post("/node-templates", response_model=NodeTemplateOut)
 def create_template(payload: NodeTemplateCreate, db: Session = Depends(get_db)):
